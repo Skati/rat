@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import researchpy as rp
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import pingouin as pg
 
 conn = sqlite3.connect('./data/RMhistory.db3')
 c = conn.cursor()
@@ -52,13 +53,22 @@ print()
 tukey = pairwise_tukeyhsd(endog=df['eventTime'],     # Data
                           groups=df['object'],   # Groups
                           alpha=0.05)
-print(tukey.summary())
-print(type(tukey.summary()))
+#print(tukey)
+resultFile = open("table.csv",'w')
+resultFile.write(tukey.summary().as_csv())
+resultFile.close()
+
+tukey_res = pd.read_csv("table.csv")
 grouped_multiple.to_excel(writer, sheet_name='total', index=True)
 grouped_multiple5.to_excel(writer, sheet_name='total<5', index=True)
 grouped_multiple6.to_excel(writer, sheet_name='total<6', index=True)
-#tukey.summary().to_excel(writer, sheet_name='group statistics', index=True)
+#tukey_res.to_excel(writer, sheet_name='group statistics', index=True)
 
+#data_groups = [df.groupby('object')['timeStamp'].get_group(g).to_numpy() for g in groups]
+stat=pg.anova(data=df, dv='eventTime', between='object')
+#stat=pg.homoscedasticity(data_groups)
+print(stat)
+#
 writer.save()
 #writer1.save()
 
